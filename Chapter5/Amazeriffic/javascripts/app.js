@@ -1,3 +1,45 @@
+var elementExists = function(array, element){
+	var arrayLength = array.length;
+	for (var i = 0; i < arrayLength; i++) {
+	    if (element === array[i])
+			return true;
+    }
+	return false;
+}
+
+var organizeByTags = function (toDoObjects){
+	console.log("organize by tags called");
+	
+	var tagArray = [];
+	var arrayLength
+	toDoObjects.forEach(function(toDoObject){
+		arrayLength = toDoObject.tags.length;
+		for (var i = 0; i < arrayLength; i++) {
+			if (!(elementExists(tagArray, toDoObject.tags[i])))
+				tagArray.push(toDoObject.tags[i]);
+		}
+	})
+	tagObjectArray = [];
+	for (var i = 0; i < tagArray.length; i++) {
+		
+		console.log(tagArray[i]);
+		var tagObject={};
+		var todoArray = [];
+		toDoObjects.forEach(function(toDoObject){
+			tagObject.name = tagArray[i];
+			arrayLength = toDoObject.tags.length;
+			for (var j = 0; j < arrayLength; j++) {
+				if (toDoObject.tags[j]===tagArray[i])
+					todoArray.push(toDoObject.description);
+			}
+			tagObject.toDos = todoArray;
+		})
+		tagObjectArray.push(tagObject);
+	}
+	return tagObjectArray;
+	
+};
+
 var main = function (toDoObjects) {
 	var toDos = toDoObjects.map(function (toDo){
 		return toDo.description;
@@ -11,6 +53,9 @@ var main = function (toDoObjects) {
             var $content,
                 $input,
                 $button,
+				$inputLabel,
+				$tagInput,
+				$tagLabel,
                 i;
 
             $(".tabs a span").removeClass("active");
@@ -32,20 +77,13 @@ var main = function (toDoObjects) {
                 });
             } else if ($element.parent().is(":nth-child(3)")) {
 				console.log("tag code here");
-				var organizedByTag = [
-					{	
-						"name":"shopping",
-						"toDos":["Get groceries"]
-					},
-			
-					{
-"name":"chores",
-"toDos":["Get groceries", "take gracie to the park"]
-					}
-				];
-				organizedByTag.forEach(function(tag){
+				var $content;
+				var tagObjects = {};
+				tagObjects = organizeByTags(toDoObjects);
+				$content = $("<ul>");
+			    tagObjects.forEach(function (tag) {
 					var $tagName = $("<h3>").text(tag.name),
-						$content = $("<ul>");
+					$content = $("<ul>");
 					tag.toDos.forEach(function(description){
 						var $li = $("<li>").text(description);
 						$content.append($li);
@@ -55,17 +93,26 @@ var main = function (toDoObjects) {
 				});
             } else if ($element.parent().is(":nth-child(4)")) {
                 // input a new to-do
-                $input = $("<input>"),
+                $input = $("<input>").addClass("description"),
+				$inputLabel = $("<p>").text("Description: "),
+				$tagInput = $("<input>").addClass("tags"),
+				$tagLabel = $("<p>").text("Tags: "),
                 $button = $("<button>").text("+");
 
                 $button.on("click", function () {
                     if ($input.val() !== "") {
-                        toDos.push($input.val());
+						var description = $input.val(),
+						tags = $tagInput.val().split(",");
+						toDoObjects.push({"description":description,"tags":tags});
+                        toDos = toDoObjects.map(function (toDo) {
+							return toDo.description;
+						});
                         $input.val("");
+                        $tagInput.val("");
                     }
                 });
 
-                $content = $("<div>").append($input).append($button);
+                $content = $("<div>").append($inputLabel).append($input).append($tagLabel).append($tagInput).append($button);
             }
 
             $("main .content").append($content);
